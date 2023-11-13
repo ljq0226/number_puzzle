@@ -23,3 +23,33 @@ export function shuffleMatrix(n: number): number[][] {
 
   return matrix;
 }
+export function compareAdjacentCoordinates(coord1: [number, number], coord2: [number, number]): string {
+  const [x1, y1] = coord1;
+  const [x2, y2] = coord2;
+
+  if (x2 === x1 && y2 === y1 - 1) {
+    return "l";
+  } else if (x2 === x1 && y2 === y1 + 1) {
+    return "r";
+  } else if (x2 === x1 - 1 && y2 === y1) {
+    return "t";
+  } else if (x2 === x1 + 1 && y2 === y1) {
+    return "b";
+  } else {
+    return "";
+  }
+}
+
+export function findZeroCoordinates(matrix: number[][]): [number, number] {
+  const size = matrix.length;
+
+  for (let i = 0; i < size; i++) {
+    for (let j = 0; j < size; j++) {
+      if (matrix[i][j] === 0) {
+        return [i, j];
+      }
+    }
+  }
+
+  return [0,0];
+}
