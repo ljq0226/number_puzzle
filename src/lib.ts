@@ -1,4 +1,4 @@
-export function shuffleMatrix(n: number): number[][] {
+export function shuffleMatrix(n: number): { newMatrix: number[][], operateMatrix: number[][], successMatrix: number[][] } {
   const length = n * n;
   const array = Array.from({ length }, (_, index) => index);
 
@@ -7,22 +7,31 @@ export function shuffleMatrix(n: number): number[][] {
     [array[i], array[j]] = [array[j], array[i]];
   }
 
-  const matrix: number[][] = [];
+  const newMatrix: number[][] = [];
+  const operateMatrix: number[][] = [];
+  const successMatrix: number[][] = [];
   let index = 0;
 
   for (let i = 0; i < n; i++) {
     const row: number[] = [];
+    const operateRow: number[] = [];
+    const successRow: number[] = [];
 
     for (let j = 0; j < n; j++) {
       row.push(array[index]);
+      operateRow.push(array[index]);
+      successRow.push(index === length - 1 ? 0 : index + 1);
       index++;
     }
 
-    matrix.push(row);
+    newMatrix.push(row);
+    operateMatrix.push(operateRow);
+    successMatrix.push(successRow);
   }
 
-  return matrix;
+  return { newMatrix, operateMatrix, successMatrix };
 }
+
 export function compareAdjacentCoordinates(coord1: [number, number], coord2: [number, number]): string {
   const [x1, y1] = coord1;
   const [x2, y2] = coord2;
@@ -52,4 +61,24 @@ export function findZeroCoordinates(matrix: number[][]): [number, number] {
   }
 
   return [0,0];
+}
+
+export function areArraysEqual<T>(arr1: T[][], arr2: T[][]): boolean {
+  if (arr1.length !== arr2.length) {
+    return false;
+  }
+
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i].length !== arr2[i].length) {
+      return false;
+    }
+
+    for (let j = 0; j < arr1[i].length; j++) {
+      if (arr1[i][j] !== arr2[i][j]) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }

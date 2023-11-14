@@ -1,36 +1,53 @@
 import { useEffect, useRef, useState } from 'react'
-import { shuffleMatrix, compareAdjacentCoordinates, findZeroCoordinates } from './lib'
+import { shuffleMatrix, compareAdjacentCoordinates, findZeroCoordinates, areArraysEqual } from './lib'
 import './App.css'
 function App() {
 
-
   const [currentEmpty, setCurrentEmpty] = useState<[number, number]>([0, 0])
-  const [arr, setArr] = useState<number[][]>([])
+  const [matrixArr, setMatrixArr] = useState<number[][]>([])
+  const [operateMatrixArr, setOperateMatrixArr] = useState<number[][]>([])
+  const [successMatrix, setSuccessMatrix] = useState<number[][]>([])
   const emptyRef = useRef(null)
+  const selectRef = useRef(null)
+  const [matrix, setMatrix] = useState(3)
 
 
   useEffect(() => {
-    const newArr = shuffleMatrix(3)
-    const zeroPosition = findZeroCoordinates(newArr)
+    const { newMatrix, operateMatrix, successMatrix } = shuffleMatrix(matrix)
+    const zeroPosition = findZeroCoordinates(newMatrix)
+    setSuccessMatrix(successMatrix)
+    setOperateMatrixArr(operateMatrix)
     setCurrentEmpty(zeroPosition)
-    setArr(newArr)
-  }, [])
+    setMatrixArr(newMatrix)
+  }, [matrix])
 
   const isRightPosition = (i: number, j: number, position: number[]) => {
     return !(position[0] == i && position[1] == j)
   }
 
-  const handleClick = (e: MouseEvent) => {
 
-  }
 
   return (
-    <div className='h-screen w-screen flex px-[15vw] justify-center align-center'>
-
+    <div className='h-screen w-screen flex flex-col px-[15vw]'>
+      <div className='my-10'>
+        游戏设置 <select
+          ref={selectRef}
+          onChange={() => {
+            const select = selectRef.current as unknown as HTMLSelectElement
+            setMatrix(+(select.value))
+          }} defaultValue={3} name="num" id="">
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </div>
       <div className="flex flex-col items-center justify-center w-full">
-        <div className='w-[320px]  my-auto flex flex-col items-center justify-center  h-[320px] border-[3px] drop-shadow-2xl border-solid m-auto '>
+        <div
+          style={{ width: `${matrix * 100 + 20}px`, height: `${matrix * 100 + 20}px` }}
+          className='my-auto flex flex-col items-center justify-center  border-[3px] drop-shadow-2xl border-solid m-auto '>
           {
-            arr.map((item, i) => {
+            matrixArr.map((item, i) => {
               return (
                 <div
                   key={i}
@@ -69,22 +86,50 @@ function App() {
                               div.style.transform = `translate(${x}%,${y - 100}%)`
                               div.setAttribute('data-y', `${divpreY - 1}`)
                               emptyDiv.setAttribute('data-y', `${emptypreY + 1}`)
+                              const arr = operateMatrixArr
+                              const num = arr[divpreY][divpreX]
+                              arr[emptypreY][emptypreX] = num
+                              arr[divpreY][divpreX] = 0
+                              setOperateMatrixArr(arr)
+                              console.log('arr', arr)
+
                             } else if (res === 'l') {
                               emptyDiv.style.transform = `translate(${ex + 100}%,${ey}%)`
                               div.style.transform = `translate(${x - 100}%,${y}%)`
                               div.setAttribute('data-x', `${divpreX - 1}`)
                               emptyDiv.setAttribute('data-x', `${emptypreX + 1}`)
+                              const arr = operateMatrixArr
+                              const num = arr[divpreY][divpreX]
+                              arr[emptypreY][emptypreX] = num
+                              arr[divpreY][divpreX] = 0
+                              setOperateMatrixArr(arr)
+                              console.log('arr', arr)
                             } else if (res === 'b') {
                               emptyDiv.style.transform = `translate(${ex}%,${ey - 100}%)`
                               div.style.transform = `translate(${x}%,${y + 100}%)`
                               div.setAttribute('data-y', `${divpreY + 1}`)
                               emptyDiv.setAttribute('data-y', `${emptypreY - 1}`)
-
+                              const arr = operateMatrixArr
+                              const num = arr[divpreY][divpreX]
+                              arr[emptypreY][emptypreX] = num
+                              arr[divpreY][divpreX] = 0
+                              setOperateMatrixArr(arr)
+                              console.log('arr', arr)
                             } else if (res === 'r') {
                               emptyDiv.style.transform = `translate(${ex - 100}%,${ey}%)`
                               div.style.transform = `translate(${x + 100}%,${y}%)`
                               div.setAttribute('data-x', `${divpreX + 1}`)
                               emptyDiv.setAttribute('data-x', `${emptypreX - 1}`)
+                              const arr = operateMatrixArr
+                              const num = arr[divpreY][divpreX]
+                              arr[emptypreY][emptypreX] = num
+                              arr[divpreY][divpreX] = 0
+                              setOperateMatrixArr(arr)
+                              console.log('arr', arr)
+                            }
+
+                            if (areArraysEqual(operateMatrixArr, successMatrix)) {
+                              alert('GameOver!!!!')
                             }
                           }
                           }
@@ -94,7 +139,6 @@ function App() {
                               ?
                               <button
                                 className='w-[72px] h-[72px] z-10 bg-cyan-100 text-[24px] flex-center text-black'
-                                onClick={() => handleClick}
                               >
                                 <span>
                                   {num}
