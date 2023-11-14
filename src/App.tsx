@@ -1,29 +1,34 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { shuffleMatrix, compareAdjacentCoordinates, findZeroCoordinates } from './lib'
 import './App.css'
-import { shuffleMatrix } from './lib'
 function App() {
 
 
-  const [currentEmpty, setCurrentEmpty] = useState(0)
+  const [currentEmpty, setCurrentEmpty] = useState<[number, number]>([0, 0])
   const [arr, setArr] = useState<number[][]>([])
+  const emptyRef = useRef(null)
+
 
   useEffect(() => {
-    setArr(shuffleMatrix(3))
+    const newArr = shuffleMatrix(3)
+    const zeroPosition = findZeroCoordinates(newArr)
+    setCurrentEmpty(zeroPosition)
+    setArr(newArr)
   }, [])
+
+  const isRightPosition = (i: number, j: number, position: number[]) => {
+    return !(position[0] == i && position[1] == j)
+  }
 
   const handleClick = (e: MouseEvent) => {
 
-
-
   }
-
-  console.log('arr', arr)
 
   return (
     <div className='h-screen w-screen flex px-[15vw] justify-center align-center'>
 
-      <div className="flex w-full justify-center items-center flex-col">
-        <div className='w-[320px]  my-auto flex flex-col items-center justify-center  h-[320px]  border-[3px] drop-shadow-2xl border-solid m-auto '>
+      <div className="flex flex-col items-center justify-center w-full">
+        <div className='w-[320px]  my-auto flex flex-col items-center justify-center  h-[320px] border-[3px] drop-shadow-2xl border-solid m-auto '>
           {
             arr.map((item, i) => {
               return (
@@ -35,20 +40,60 @@ function App() {
                       return (
                         <div
                           key={i + '-' + j}
-                          className='p-2'
+                          className='relative p-2'
+                          style={{ transform: 'translate(0%, 0%)', width: 100 }}
+
                           data-p={i + '-' + j}
+                          data-x={j}
+                          data-y={i}
                           onClick={(e) => {
                             const div = e.currentTarget
-                            const position = div.getAttribute('data-p')?.split('-')
+                            const emptyButton = emptyRef.current as unknown as HTMLButtonElement
+                            const emptyDiv = emptyButton.parentNode as HTMLButtonElement
+
+                            const divpreY = Number(div.getAttribute('data-y'))
+                            const divpreX = Number(div.getAttribute('data-x'))
+                            const emptypreY = Number(emptyDiv.getAttribute('data-y'))
+                            const emptypreX = Number(emptyDiv.getAttribute('data-x'))
+                            const p1 = [divpreY, divpreX] as [number, number]
+                            const p2 = [emptypreY, emptypreX] as [number, number]
+                            const res = compareAdjacentCoordinates(p1, p2)
+                            const po = div.style.transform.slice(10, -1).split(',')
+                            const epo = emptyDiv.style.transform.slice(10, -1).split(',')
+                            const x = +(po[0].slice(0, -1))
+                            const y = +(po[1].slice(0, -1))
+                            const ex = +(epo[0].slice(0, -1))
+                            const ey = +(epo[1].slice(0, -1))
+                            if (res === 't') {
+                              emptyDiv.style.transform = `translate(${ex}%,${ey + 100}%)`
+                              div.style.transform = `translate(${x}%,${y - 100}%)`
+                              div.setAttribute('data-y', `${divpreY - 1}`)
+                              emptyDiv.setAttribute('data-y', `${emptypreY + 1}`)
+                            } else if (res === 'l') {
+                              emptyDiv.style.transform = `translate(${ex + 100}%,${ey}%)`
+                              div.style.transform = `translate(${x - 100}%,${y}%)`
+                              div.setAttribute('data-x', `${divpreX - 1}`)
+                              emptyDiv.setAttribute('data-x', `${emptypreX + 1}`)
+                            } else if (res === 'b') {
+                              emptyDiv.style.transform = `translate(${ex}%,${ey - 100}%)`
+                              div.style.transform = `translate(${x}%,${y + 100}%)`
+                              div.setAttribute('data-y', `${divpreY + 1}`)
+                              emptyDiv.setAttribute('data-y', `${emptypreY - 1}`)
+
+                            } else if (res === 'r') {
+                              emptyDiv.style.transform = `translate(${ex - 100}%,${ey}%)`
+                              div.style.transform = `translate(${x + 100}%,${y}%)`
+                              div.setAttribute('data-x', `${divpreX + 1}`)
+                              emptyDiv.setAttribute('data-x', `${emptypreX - 1}`)
+                            }
                           }
                           }
-                        // style={{transform:'translateY(100%)'}}
                         >
                           {
-                            num
+                            isRightPosition(i, j, currentEmpty)
                               ?
                               <button
-                                className='w-[72px] h-[72px] bg-cyan-100 text-[24px] flex-center text-black'
+                                className='w-[72px] h-[72px] z-10 bg-cyan-100 text-[24px] flex-center text-black'
                                 onClick={() => handleClick}
                               >
                                 <span>
@@ -57,7 +102,8 @@ function App() {
                               </button>
                               :
                               <button
-                                className='w-[72px] h-[72px] bg-gray-300 text-[24px] flex-center text-black  '>
+                                ref={emptyRef}
+                                className='w-[72px] p-2 h-[72px] bg-gray-300 text-[24px] flex-center text-black  '>
                               </button>
                           }
 
@@ -69,76 +115,6 @@ function App() {
               )
             })
           }
-
-          {/* 
-          <div className='flex mx-auto'>
-            <div className='p-2'
-            // style={{transform:'translateY(100%)'}}
-            >
-              <button
-                className='w-[72px] h-[72px] bg-cyan-100 text-[24px] flex-center text-black  '>
-                <span>
-                  4
-                </span>
-              </button>
-            </div>
-            <div className='p-2'
-            // style={{transform:'translateX(100%)'}}
-            >
-              <button
-                className='w-[72px] h-[72px] bg-cyan-100 text-[24px] flex-center text-black  '>
-                <span>
-                  5
-                </span>
-              </button>
-            </div>
-            <div className='p-2'
-              style={{ transform: 'translateY(100%)' }}
-            >
-              <button
-                className='w-[72px] h-[72px] bg-cyan-100 text-[24px] flex-center text-black  '>
-                <span>
-                  6
-                </span>
-              </button>
-            </div>
-
-
-          </div>
-
-          <div className='flex mx-auto'>
-            <div className='p-2'
-            // style={{transform:'translateY(100%)'}}
-            >
-              <button
-                className='w-[72px] h-[72px] bg-cyan-100 text-[24px] flex-center text-black  '>
-                <span>
-                  4
-                </span>
-              </button>
-            </div>
-            <div className='p-2'
-            // style={{transform:'translateY(100%)'}}
-            >
-              <button
-                className='w-[72px] h-[72px] bg-cyan-100 text-[24px] flex-center text-black  '>
-                <span>
-                  4
-                </span>
-              </button>
-            </div>
-            <div className='p-2'
-            // style={{transform:'translateY(100%)'}}
-            >
-              <button
-                className='w-[72px] h-[72px] bg-cyan-100 text-[24px] flex-center text-black  '>
-                <span>
-                  4
-                </span>
-              </button>
-            </div> */}
-
-          {/* </div> */}
         </div>
 
       </div>
